@@ -1,0 +1,1 @@
+echo '{"isSelf": true}' | ./encode.js 5017 PullUserProfileRequest | ./call.js | ./decode.js PullUserProfileResponse

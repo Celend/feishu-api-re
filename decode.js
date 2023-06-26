@@ -1,16 +1,14 @@
 #! /usr/bin/env node
 
-import protobufjs from 'protobufjs'
-import url from 'url'
-import fs from 'fs'
-import path from 'path'
+const protobufjs = require('protobufjs')
+const url = require('url')
+const fs = require('fs')
+const path = require('path')
 
 const messagePb = new protobufjs.Root()
-messagePb.loadSync([
-  'pb_out/contact/v1/chatters.proto',
-  'pb_out/basic/v1/basic.proto',
-  'pb_out/basic/v1/entities.proto',
-])
+messagePb.loadSync(
+  fs.readdirSync('pb_server_out').map(x => path.join('pb_server_out', x)).filter(x => x.endsWith('.proto'))
+)
 
 const serverPb = new protobufjs.Root()
 serverPb.loadSync(
@@ -22,7 +20,7 @@ const packet = serverPb.lookupType('improto.Packet')
 const msg = serverPb.lookupType(process.argv[2])
 msg.resolveAll()
 
-export async function decode() {
+async function decode() {
   const buffer = await new Promise((r) => {
     let buffer = Buffer.alloc(0)
     process.stdin.on('data', (data) => {
@@ -38,6 +36,6 @@ export async function decode() {
   return JSON.stringify(msg.decode(p.payload), null, 2)
 }
 
-if (import.meta.url === url.pathToFileURL(process.argv[1]).href) {
+if (require.main === module) {
   decode().then(console.log)
 }
